@@ -1,0 +1,67 @@
+name: Bug Report
+description: File a structured technical report to help improve AeroPort
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem Description
+      description: Provide a clear and concise description of what the bug is and what you expected to happen.
+      placeholder: Describe the issue in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: List the exact steps required to reproduce the behavior.
+      placeholder: |
+        1. Open aeroport-macos app
+        2. Boot the headless Windows 11 guest VM
+        3. Launch specific 3D application...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: host-hardware
+    attributes:
+      label: Host Apple Silicon Hardware
+      description: Select the Mac processor architecture you are currently developing or running on.
+      options:
+        - MacBook Air (M1 / M2 / M3 / M5)
+        - MacBook Pro (Base / Pro / Max / Ultra)
+        - Mac Studio
+        - Mac mini
+        - Mac Pro
+    validations:
+      required: true
+
+  - type: input
+    id: host-os
+    attributes:
+      label: macOS Version
+      placeholder: e.g., macOS 15.5 Sequoia
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected Component
+      description: Which architectural layer or repository is experiencing the issue?
+      options:
+        - aeroport-macos (SwiftUI / VM Control / Window Management)
+        - aeroport-wddm-kernel (C++ KMD / aeroport.sys)
+        - aeroport-guest-agent (C++ UMD / aeroport.dll / VSOCK Daemon)
+        - aeroport-iso-tool (PowerShell Deployment Automation)
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output or Stack Traces
+      description: Paste any terminal logs, Xcode DerivedData outputs, Windows Event Viewer captures, or kernel panic dumps here.
+      render: shell
