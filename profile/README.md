@@ -1,34 +1,26 @@
-# AeroPortOSS
+# AeroPort
 
-AeroPort is an open-source, application-forwarding hypervisor framework engineered specifically for Apple Silicon architecture.
+AeroPort is an open-source, high-performance virtualization and application translation ecosystem designed to run Windows applications headlessly on Apple Silicon macOS. By bypassing traditional full-desktop rendering paths and directly intercepting graphics APIs, AeroPort seamlessly projects Windows application windows into native macOS AppKit containers with near-zero overhead.
 
-Instead of forcing users to manage a resource-heavy secondary desktop environment, AeroPort orchestrates an optimized, headless Windows 11 ARM64 virtual machine in the background via macOS's native Virtualization.framework. Individual application windows are intercepted inside the guest subsystem, composited locally to preserve child interface elements, and mapped directly onto the macOS desktop as native, floating, transparent container windows. This provides individual Mac Dock stubs and native window snapping while eliminating secondary desktop overhead.
+## Architecture Overview
 
----
+The ecosystem is divided into three core subsystems to optimize compilation toolchains and maintain clean separation of concerns:
 
-## Architecture and Repository Structure
+1. **Host Core (`aeroport-core`)**: Managed in Swift, this subsystem utilizes macOS `Virtualization.framework` to run the ARM64 Windows guest, handles native window compositions, and provides a built-in curated storefront.
+2. **Guest Agent (`aeroport-guest-agent`)**: Developed in C++ and C, this subsystem compiles inside the Windows guest environment. It contains the binary process injector, the D3D12-to-Metal translation hooking layer, and the UMDF 2.x Indirect Display Driver.
+3. **Provisioning Engine (`aeroport-iso-tool`)**: A PowerShell-based utility suite designed to streamline official Windows 11 ARM64 installation media, stripping telemetry and injecting required VirtIO and runtime dependencies.
 
-The AeroPort ecosystem is decoupled across three specialized repositories:
+## Key Features
 
-* **[aeroport-macos](https://github.com/AeroPortOSS/aeroport-macos):** The host-side management application and graphics translation server. Developed in SwiftUI and AppKit, it coordinates the hypervisor lifecycle and hosts an atomic background processing thread that translates incoming execution tokens into native Metal commands on the fly.
-* **[aeroport-guest-agent](https://github.com/AeroPortOSS/aeroport-guest-agent):** The unified Windows guest environment subsystem. Contains the process launcher (`aeroport-launch`), the runtime API interceptor (`aeroport-hook.dll`) utilizing Microsoft Detours, the Vectored Exception Handler memory tracker, and the UMDF 2.x Indirect Display Driver (`aeroport-idd-driver`).
-* **[aeroport-iso-tool](https://github.com/AeroPortOSS/aeroport-iso-tool):** The provisioning engine. Automated PowerShell routines that query deployment manifests, strip out operating system telemetry/bloatware, pre-inject our unified guest runtime subsystem, and configure boot test-signing configurations natively.
+* **Headless Window Forwarding**: Windows apps render without the underlying Windows desktop shell, appearing as native, floating, transparent containers on macOS.
+* **Direct Graphics Pipeline**: Intercepts Direct3D 12 and DXGI calls within user-space, translating instructions directly into native Apple Metal pipelines.
+* **Local Shader Caching**: Eliminates real-time translation stutter by compiling and caching Metal binary archives directly on the host file system.
+* **Integrated Storefront**: Features a curated registry for common productivity tools, engineering software, and performance titles, funded entirely by non-intrusive B2B developer placements.
 
----
+## Contributing
 
-## The Paravirtualized Graphics Pipeline
+We welcome contributions across all layers of the stack. Please review the contribution guidelines in each specific repository before submitting a Pull Request.
 
-AeroPort achieves low rendering latency by establishing a direct, user-space API translation pathway across a zero-copy hypervisor shared memory boundary:
+## License
 
-1. **Intercept:** The local hook runtime captures full Pipeline State Objects (PSOs)—including DXIL shader bytecode, Root Signatures, and input layouts—spoofing a discrete hardware adapter to bypass system software rendering fallbacks.
-2. **Synchronize:** The integrated Indirect Display Driver handles surface swapchains and timing loops, mapping Windows presentation fences directly to host hardware synchronization primitives to prevent concurrent memory access races.
-3. **Transport:** Frame data and execution tokens are written to a physical block of RAM mapped symmetrically across the hypervisor boundary using Stage 2 MMU hardware allocations.
-4. **Translate & Render:** A macOS host background thread reads the ring buffer via atomic load-acquire primitives, passes raw DXIL tokens into Apple's native MetalShaderConverter.framework, and schedules execution directly on the Apple Silicon GPU cluster.
-
----
-
-## Contributing to AeroPortOSS
-
-AeroPortOSS is a community-driven project built on engineering transparency. We welcome contributors across multiple disciplines:
-* **macOS Development:** Swift, SwiftUI, AppKit window composition, and MetalShaderConverter interfacing.
-* **Windows Systems Engineering:** C++, COM interface overriding, Microsoft Detours hooking mechanics, UMDF 2.x Indirect Display Drivers, and ARM NEON vector assembly optimization.
+AeroPort is open-source software licensed under the AGPL-3.0 License. Commercial enterprise licensing and support options are available for corporate environments requiring custom deployments.
